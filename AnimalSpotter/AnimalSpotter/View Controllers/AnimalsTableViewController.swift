@@ -48,7 +48,33 @@ class AnimalsTableViewController: UITableViewController {
     
     // MARK: - Actions
     @IBAction func getAnimals(_ sender: UIBarButtonItem) {
-        // fetch all animals from API
+        apiController.fetchAllAnimalNames { (result) in
+            do {
+                let names = try result.get()
+                DispatchQueue.main.async {
+                    self.animalNames = names
+                    }
+                } catch {
+                    if let error = error as? NetworkError {
+                        switch error {
+                            case .noAuth:
+                            print("No bearer token exists")
+                            case .badAuth:
+                            print("Bearer Token invalid")
+                            case .otherError:
+                            print("Other error occured, see log")
+                            case .badData:
+                            print("No data received, or data corrupted")
+                            case .noDecode:
+                            print("JSO culd not be decoded")
+                              
+                        }
+                    }
+                }
+            
+        }
+
+
     }
     
     // MARK: - Navigation

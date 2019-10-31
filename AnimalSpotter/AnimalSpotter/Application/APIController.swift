@@ -93,7 +93,7 @@ class APIController {
             }
             
             let decoder = JSONDecoder()
-            do {
+            do {                                // why Bearer.self?
                 self.bearer = try decoder.decode(Bearer.self, from: data)
             } catch {
                 print("Error decoding bearer object: \(error)")
@@ -106,6 +106,93 @@ class APIController {
     }
     
     // create function for fetching all animal names
+    // Review beginning of lecture to understanding "Fetch" and error / API fetching until - specifically the completion block
+    // Result is a build in Xcode Enum
+    func fetchAllAnimalNames(completion: @escaping (Result<[String], NetworkError>) -> Void) {
+        guard let bearer = bearer else {
+            completion(.failure(.noAuth))
+            return
+        }
+        
+        let allAnimalsURL = baseUrl.appendingPathComponent("animals/all")
+        
+        var request = URLRequest(url: allAnimalsURL)
+        request.httpMethod = HTTPMethod.get.rawValue
+        request.addValue("Bearer \(bearer.token)", forHTTPHeaderField: "Authorization")
+        
+        
+        URLSession.shared.dataTask(with: request) { (data, response, error) in
+            if let response = response as? HTTPURLResponse, response.statusCode == 401 {
+                completion(.failure(.badAuth))
+                return
+            }
+        
+            if let error = error {
+                print("Error reciging animal name data: \(error)")
+                completion(.failure(.otherError))
+            }
+        
+            guard let data = data else {
+                completion(.failure(.badData))
+                return
+            }
+        
+            let decoder = JSONDecoder()
+            do {                                      // the success state
+                let animalNames = try decoder.decode([String].self, from: data)
+                completion(.success(animalNames))
+            } catch {
+                print("Error decoding animal objects: \(error)")
+                completion(.failure(.noDecode))
+            }
+            
+        }.resume()
+    }
+    
+    // create function to fetch details
+    func fetchDetails(for animalName: String, completion: @escaping (Result<Animal, NetworkError>) -> Void) {
+        guard let bearer = bearer else {
+            completion(.failure(.noAuth))
+            return
+        }
+        
+        let animalsURL = baseUrl.appendingPathComponent("animals/\(animalName)")
+        var request = URLRequest(url: animalsURL)
+        request.httpMethod = HTTPMethod.get.rawValue
+        request.addValue("Bearer \(bearer.token)", forHTTPHeaderField: "Authorization")
+        
+        
+        URLSession.shared.dataTask(with: request) { (data, response, error) in
+            if let response = response as? HTTPURLResponse, response.statusCode == 401 {
+                completion(.failure(.badAuth))
+                return
+            }
+        
+            if let error = error {
+                print("Error reciging animal name data: \(error)")
+                completion(.failure(.otherError))
+            }
+        
+            guard let data = data else {
+                completion(.failure(.badData))
+                return
+            }
+        
+            let decoder = JSONDecoder()
+            do {                                 // the success state
+                let animal = try decoder.decode(Animal.self, from: data)
+                completion(.success(animal))
+            } catch {
+                print("Error decoding animal object: \(error)")
+                completion(.failure(.noDecode))
+            }
+            
+        }.resume()
+    }
+    
     
     // create function to fetch image
+
+    
+    
 }
