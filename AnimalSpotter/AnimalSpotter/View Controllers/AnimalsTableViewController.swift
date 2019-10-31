@@ -14,6 +14,7 @@ class AnimalsTableViewController: UITableViewController {
     
     private var animalNames: [String] = []
     
+    // the Parent instance of API controller
     let apiController = APIController()
     
     // MARK: - View Lifecycle
@@ -48,33 +49,30 @@ class AnimalsTableViewController: UITableViewController {
     
     // MARK: - Actions
     @IBAction func getAnimals(_ sender: UIBarButtonItem) {
-        apiController.fetchAllAnimalNames { (result) in
+        // fetch all animals from API
+        apiController.fetchAllAnimalNames { result in
             do {
                 let names = try result.get()
                 DispatchQueue.main.async {
                     self.animalNames = names
-                    }
-                } catch {
-                    if let error = error as? NetworkError {
-                        switch error {
-                            case .noAuth:
-                            print("No bearer token exists")
-                            case .badAuth:
-                            print("Bearer Token invalid")
-                            case .otherError:
-                            print("Other error occured, see log")
-                            case .badData:
-                            print("No data received, or data corrupted")
-                            case .noDecode:
-                            print("JSO culd not be decoded")
-                              
-                        }
+                }
+            } catch {
+                if let error = error as? NetworkError {
+                    switch error {
+                    case .noAuth:
+                        print("No bearer token exists")
+                    case .badAuth:
+                        print("Bearer token invalid")
+                    case .otherError:
+                        print("Other error occurred, see log")
+                    case .badData:
+                        print("No data received, or data corrupted")
+                    case .noDecode:
+                        print("JSON could not be decoded")
                     }
                 }
-            
+            }
         }
-
-
     }
     
     // MARK: - Navigation
@@ -85,7 +83,13 @@ class AnimalsTableViewController: UITableViewController {
             if let loginVC = segue.destination as? LoginViewController {
                 loginVC.apiController = apiController
             }
+        } else if segue.identifier == "ShowAnimalDetailSegue" {
+            if let indexPath = tableView.indexPathForSelectedRow, let detailVC = segue.destination as? AnimalDetailViewController {
+                detailVC.animalName = animalNames[indexPath.row]
+                detailVC.apiController = apiController
+            }
         }
     }
+
 }
 
