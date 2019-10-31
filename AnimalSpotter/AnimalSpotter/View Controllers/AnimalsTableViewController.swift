@@ -12,7 +12,11 @@ class AnimalsTableViewController: UITableViewController {
     
     // MARK: - Properties
     
-    private var animalNames: [String] = []
+    private var animalNames: [String] = [] {
+        didSet {
+            tableView.reloadData()
+        }
+    }
     
     // the Parent instance of API controller
     let apiController = APIController()
